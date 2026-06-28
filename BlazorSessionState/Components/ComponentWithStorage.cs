@@ -3,62 +3,72 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Dynamic;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace BlazorSessionState.Components
 {
-    public abstract class ComponentWithStorage<TStorageKind> : ComponentBase where TStorageKind : ProtectedBrowserStorage
+    public abstract class ComponentWithBrowserStorage<TStorageKind> : ComponentBase where TStorageKind : ProtectedBrowserStorage
     {
         private readonly ObservableCollection<KeyValuePair<string, object?>> _values;
-        private readonly Dictionary<string, Type?> _types = [];
+        private readonly Dictionary<string, Type> _types = [];
 
-        private static readonly NotifyCollectionChangedAction[] _notifyCollectionChangedActions =
-        {
-            NotifyCollectionChangedAction.Add,
-            NotifyCollectionChangedAction.Replace
-        };
+        private bool _storageLoaded = false;
 
         [Inject] private TStorageKind BrowserStorage { get; set; } = default!;
 
-        protected ComponentWithStorage()
+        protected ComponentWithBrowserStorage()
         {
             _values = [];
-
             _values.CollectionChanged += ValuesCollectionChanged;
+
+            InitializeTypes();
         }
 
-        ~ComponentWithStorage()
+        ~ComponentWithBrowserStorage()
         {
             _values.CollectionChanged -= ValuesCollectionChanged;
         }
 
+        private void InitializeTypes()
+        {
+            foreach (var property in GetStorageAttributeProperties())
+            {
+                var propertyName = property.Name!;
+                var propertyValue = property.GetValue(this);
+                var propertyType = property.PropertyType 
+                    ?? throw new Exception($"Could not get type for property {propertyName}.");
+                
+                _types.Add(propertyName, propertyType);
+                _values.Add(new(propertyName, propertyValue));
+            }
+        }
+
         private async void ValuesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
         {
-            if (!_notifyCollectionChangedActions.Contains(e.Action))
+            if (e.Action != NotifyCollectionChangedAction.Replace)
             {
                 return;
             }
 
-            var newItems = e.NewItems?.Cast<KeyValuePair<string, object>>() ?? [];
-            foreach (var item in newItems)
+            var updates = e.NewItems?.Cast<KeyValuePair<string, object?>>() ?? [];
+            foreach (var item in updates)
             {
                 var newValue = item.Value;
                 var valueType = _types[item.Key];
 
                 var serialized = JsonSerializer.Serialize(newValue, valueType!);
-                await BrowserStorage.SetAsync(item.Key, serialized);
+                var storageKey = GetStorageKey(item.Key);
+                await BrowserStorage.SetAsync(storageKey, serialized);
             }
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender)
+            if (firstRender && !_storageLoaded)
             {
                 await TryLoadStorageValues();
+                _storageLoaded = true;
             }
             else
             {
@@ -72,7 +82,7 @@ namespace BlazorSessionState.Components
         {
             return this.GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(p => p.GetCustomAttribute<UseBrowserStorage>() != null);
+                .Where(p => p.GetCustomAttribute<UseBrowserStorageAttribute>() != null);
         }
 
         private async Task TryLoadStorageValues()
@@ -81,13 +91,13 @@ namespace BlazorSessionState.Components
             {
                 var propertyName = property.Name!;
                 var propertyType = property.PropertyType;
-                var storageValue = await BrowserStorage.GetAsync<string>(propertyName);
 
-                _types.TryAdd(propertyName, propertyType);
+                var storageKey = GetStorageKey(propertyName);
+                var storageValue = await BrowserStorage.GetAsync<string?>(storageKey);
 
                 if (storageValue.Success)
                 {
-                    var deserialized = JsonSerializer.Deserialize(storageValue.Value!, propertyType);
+                    var deserialized = JsonSerializer.Deserialize(storageValue.Value!, propertyType!);
                     property.SetValue(this, deserialized);
 
                     StateHasChanged();
@@ -106,31 +116,21 @@ namespace BlazorSessionState.Components
             }
         }
 
-        private void SetStorageValue(string propertyName, object? storageValue)
+        private void SetStorageValue(string propertyName, object? newStorageValue)
         {
             var valueIfFound = _values.FirstOrDefault(v => string.Equals(v.Key, propertyName, StringComparison.Ordinal));
 
-            // Add
-            if (Equals(valueIfFound, default(KeyValuePair<string, object?>)))
-            {
-                var type = storageValue?.GetType();
-                _types[propertyName] = type;
-
-                var newValue = new KeyValuePair<string, object?>(propertyName, storageValue);
-                _values.Add(newValue);
-
-                return;
-            }
-
             // Do nothing if the value didn't change
-            if (Equals(valueIfFound.Value, storageValue))
+            if (Equals(valueIfFound.Value, newStorageValue))
             {
                 return;
             }
 
             // Replace
             var index = _values.IndexOf(valueIfFound);
-            _values[index] = new KeyValuePair<string, object?>(propertyName, storageValue);
+            _values[index] = new KeyValuePair<string, object?>(propertyName, newStorageValue);
         }
+
+        private string GetStorageKey(string propertyName) => $"{this.GetType().Name}.{propertyName}";
     }
 }

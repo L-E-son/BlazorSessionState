@@ -1,10 +1,13 @@
 ﻿@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
-@inherits ComponentWithStorage<ProtectedSessionStorage>
+@inherits ComponentWithBrowserStorage<ProtectedSessionStorage>
 
 <h3>Child Component</h3>
 
 <code>Parent Count: @ParentCount</code>
 <code>Secret Count: @SecretCount</code>
+<br />
+<input @bind="SecretKey" placeholder="SecretKey" />
+<input @bind="SecretValue" placeholder="SecretValue" />
 
 <button @onclick="IncrementSecretCount">Increase Secret Count</button>
 
