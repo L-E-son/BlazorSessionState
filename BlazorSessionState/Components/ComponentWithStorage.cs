@@ -38,6 +38,11 @@ namespace BlazorSessionState.Components
                 var propertyValue = property.GetValue(this);
                 var propertyType = property.PropertyType 
                     ?? throw new Exception($"Could not get type for property {propertyName}.");
+
+                if (!property.CanWrite)
+                {
+                    throw new Exception($"Property {propertyName} must have a setter.");
+                }
                 
                 _types.Add(propertyName, propertyType);
                 _values.Add(new(propertyName, propertyValue));

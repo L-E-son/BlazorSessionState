@@ -19,6 +19,12 @@ namespace BlazorSessionState.Components
         [UseBrowserStorage]
         public int ParentCount { get; set; }
 
+        //[UseBrowserStorage]
+        public int DerivedCount => ParentCount - 1;
+
+        [UseBrowserStorage]
+        public int ThirdCount { get; init; }
+
         [Parameter] public EventCallback<int> ParentCountChanged { get; set; }
 
         public int RegularProperty { get; set; }
