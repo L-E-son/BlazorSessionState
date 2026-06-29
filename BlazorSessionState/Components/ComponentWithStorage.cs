@@ -1,6 +1,7 @@
 ﻿using BlazorSessionState.Attributes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reflection;
@@ -12,6 +13,7 @@ namespace BlazorSessionState.Components
     {
         private readonly ObservableCollection<KeyValuePair<string, object?>> _values;
         private readonly Dictionary<string, Type> _types = [];
+        private readonly Dictionary<string, object?> _defaultValues = [];
 
         private bool _storageLoaded = false;
 
@@ -43,9 +45,19 @@ namespace BlazorSessionState.Components
                 {
                     throw new Exception($"Property {propertyName} must have a setter.");
                 }
-                
+
                 _types.Add(propertyName, propertyType);
                 _values.Add(new(propertyName, propertyValue));
+
+                if (propertyValue is IEnumerable enumerable)
+                {
+                    var immutable = enumerable.Cast<object?>().ToArray();
+                    _defaultValues.Add(propertyName, immutable);
+                }
+                else
+                {
+                    _defaultValues.Add(propertyName, propertyValue);
+                }
             }
         }
 
@@ -123,13 +135,25 @@ namespace BlazorSessionState.Components
 
         private void SetStorageValue(string propertyName, object? newStorageValue)
         {
-            var valueIfFound = _values.FirstOrDefault(v => string.Equals(v.Key, propertyName, StringComparison.Ordinal));
+            bool equals;
+            var defaultValue = _defaultValues[propertyName];
 
-            // Do nothing if the value didn't change
-            if (Equals(valueIfFound.Value, newStorageValue))
+            if (newStorageValue is IEnumerable newEnumerable && defaultValue is IEnumerable defaultEnumerable)
+            {
+                equals = CollectionEquals(newEnumerable, defaultEnumerable);
+            }
+            else
+            {
+                equals = Equals(newStorageValue, defaultValue);
+            }
+
+            // Do nothing if the value is default
+            if (equals)
             {
                 return;
             }
+
+            var valueIfFound = _values.FirstOrDefault(v => string.Equals(v.Key, propertyName, StringComparison.Ordinal));
 
             // Replace
             var index = _values.IndexOf(valueIfFound);
@@ -137,5 +161,13 @@ namespace BlazorSessionState.Components
         }
 
         private string GetStorageKey(string propertyName) => $"{this.GetType().Name}.{propertyName}";
+
+        private static bool CollectionEquals(IEnumerable left, IEnumerable right)
+        {
+            var leftCasted = left.Cast<object?>().ToArray();
+            var rightCasted = right.Cast<object?>().ToArray();
+
+            return Enumerable.SequenceEqual(leftCasted, rightCasted);
+        }
     }
 }
