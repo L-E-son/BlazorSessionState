@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Collections;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Reflection;
@@ -51,7 +52,7 @@ namespace BlazorSessionState.Components
 
                 if (propertyValue is IEnumerable enumerable)
                 {
-                    var immutable = enumerable.Cast<object?>().ToArray();
+                    var immutable = enumerable.Cast<object?>().ToImmutableArray();
                     _defaultValues.Add(propertyName, immutable);
                 }
                 else
@@ -164,8 +165,8 @@ namespace BlazorSessionState.Components
 
         private static bool CollectionEquals(IEnumerable left, IEnumerable right)
         {
-            var leftCasted = left.Cast<object?>().ToArray();
-            var rightCasted = right.Cast<object?>().ToArray();
+            var leftCasted = left.Cast<object?>();
+            var rightCasted = right.Cast<object?>();
 
             return Enumerable.SequenceEqual(leftCasted, rightCasted);
         }
