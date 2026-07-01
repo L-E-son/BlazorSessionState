@@ -1,8 +1,7 @@
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using BlazorSessionState.Attributes;
+using BrowserStorageComponent.Attributes;
 
-namespace BlazorSessionState.Components
+namespace BrowserStorageComponent.Application.Components
 {
     public partial class ChildComponent
     {
@@ -16,14 +15,22 @@ namespace BlazorSessionState.Components
         private string SecretValue { get; set; } = "DLL";
 
         [Parameter]
-        [UseBrowserStorage]
         public int ParentCount { get; set; }
 
         //[UseBrowserStorage]
         public int DerivedCount => ParentCount - 1;
 
         [UseBrowserStorage]
-        public int ThirdCount { get; init; }
+        public int FourthCount { get; init; }
+
+        [UseBrowserStorage]
+        public SimpleCount SimpleCount { get; set; } = new(1, 2);
+
+        [UseBrowserStorage]
+        public IList<int> Counts { get; set; } = [];
+
+        [UseBrowserStorage]
+        public IList<object> BoxedCounts { get; set; } = [];
 
         [Parameter] public EventCallback<int> ParentCountChanged { get; set; }
 
@@ -32,7 +39,17 @@ namespace BlazorSessionState.Components
         public void IncrementSecretCount()
         {
             SecretCount++;
-            //StateHasChanged();
+        }
+
+        public void SetCounts()
+        {
+            Counts.Clear();
+            Counts.Add(SecretCount);
+            Counts.Add(ParentCount);
+            Counts.Add(DerivedCount);
+            Counts.Add(FourthCount);
         }
     }
+
+    public record SimpleCount(int Count1, int Count2) { }
 }

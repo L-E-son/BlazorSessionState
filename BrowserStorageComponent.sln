@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36310.24
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserStorageComponent.E2eTests", "BrowserStorageComponent.E2eTests\BrowserStorageComponent.E2eTests.csproj", "{D84D692D-2C8E-BFB3-8C00-402E4302758F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserStorageComponent", "BrowserStorageComponent\BrowserStorageComponent.csproj", "{CB6CA3CE-0A2F-47F0-89B0-64946159766A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8EC462FD-D22E-90A8-E5CE-7E832BA40C5D}"
+	ProjectSection(SolutionItems) = preProject
+		.runsettings = .runsettings
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BrowserStorageComponent.Application", "BrowserStorageComponent.Application\BrowserStorageComponent.Application.csproj", "{64995EA6-AAAE-FEFA-61F7-0D3498D36B6F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D84D692D-2C8E-BFB3-8C00-402E4302758F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D84D692D-2C8E-BFB3-8C00-402E4302758F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D84D692D-2C8E-BFB3-8C00-402E4302758F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D84D692D-2C8E-BFB3-8C00-402E4302758F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB6CA3CE-0A2F-47F0-89B0-64946159766A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB6CA3CE-0A2F-47F0-89B0-64946159766A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB6CA3CE-0A2F-47F0-89B0-64946159766A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB6CA3CE-0A2F-47F0-89B0-64946159766A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{64995EA6-AAAE-FEFA-61F7-0D3498D36B6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64995EA6-AAAE-FEFA-61F7-0D3498D36B6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{64995EA6-AAAE-FEFA-61F7-0D3498D36B6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{64995EA6-AAAE-FEFA-61F7-0D3498D36B6F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F392E62B-FE21-4A3E-873E-9D191C7CF698}
+	EndGlobalSection
+EndGlobal

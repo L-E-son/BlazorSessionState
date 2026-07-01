@@ -1,5 +1,8 @@
 ﻿@page "/counter"
+@using BrowserStorageComponent.Components
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @rendermode InteractiveServer
+@inherits ComponentWithBrowserStorage<ProtectedSessionStorage>
 
 <PageTitle>Counter</PageTitle>
 

@@ -1,4 +1,4 @@
-﻿using BlazorSessionState.Attributes;
+﻿using BrowserStorageComponent.Attributes;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using System.Collections;
@@ -8,7 +8,7 @@ using System.Collections.Specialized;
 using System.Reflection;
 using System.Text.Json;
 
-namespace BlazorSessionState.Components
+namespace BrowserStorageComponent.Components
 {
     public abstract class ComponentWithBrowserStorage<TStorageKind> : ComponentBase where TStorageKind : ProtectedBrowserStorage
     {
@@ -45,6 +45,12 @@ namespace BlazorSessionState.Components
                 if (!property.CanWrite)
                 {
                     throw new Exception($"Property {propertyName} must have a setter.");
+                }
+
+                var parameterAttribute = property.GetCustomAttribute<ParameterAttribute>();
+                if (parameterAttribute != null)
+                {
+                    throw new InvalidOperationException($"Property {propertyName} cannot have {nameof(ParameterAttribute)}.");
                 }
 
                 _types.Add(propertyName, propertyType);
@@ -98,14 +104,14 @@ namespace BlazorSessionState.Components
 
         private IEnumerable<PropertyInfo> GetStorageAttributeProperties()
         {
-            return this.GetType()
+            return GetType()
                 .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
                 .Where(p => p.GetCustomAttribute<UseBrowserStorageAttribute>() != null);
         }
 
         private async Task TryLoadStorageValues()
         {
-            foreach (var property in this.GetStorageAttributeProperties())
+            foreach (var property in GetStorageAttributeProperties())
             {
                 var propertyName = property.Name!;
                 var propertyType = property.PropertyType;
@@ -125,7 +131,7 @@ namespace BlazorSessionState.Components
 
         private void SetStorageValues()
         {
-            foreach (var property in this.GetStorageAttributeProperties())
+            foreach (var property in GetStorageAttributeProperties())
             {
                 var propertyName = property.Name!;
                 var propertyValue = property.GetValue(this);
@@ -161,14 +167,14 @@ namespace BlazorSessionState.Components
             _values[index] = new KeyValuePair<string, object?>(propertyName, newStorageValue);
         }
 
-        private string GetStorageKey(string propertyName) => $"{this.GetType().Name}.{propertyName}";
+        private string GetStorageKey(string propertyName) => $"{GetType().Name}.{propertyName}";
 
         private static bool CollectionEquals(IEnumerable left, IEnumerable right)
         {
             var leftCasted = left.Cast<object?>();
             var rightCasted = right.Cast<object?>();
 
-            return Enumerable.SequenceEqual(leftCasted, rightCasted);
+            return leftCasted.SequenceEqual(rightCasted);
         }
     }
 }
